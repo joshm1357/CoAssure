@@ -3,18 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SafetyScore from '@/components/SafetyScore';
-
-interface WorkerProfile {
-  id: string;
-  name: string;
-  trade: string | null;
-  years_experience: number;
-  safety_score: number;
-  interaction_level: 'peer' | 'standard' | 'supportive';
-  training_records: { id: string; cert_name: string; status: string; expiry_date: string | null }[];
-  total_sessions: number;
-  total_reports: number;
-}
+import { getWorkerProfile } from '@/lib/client-db';
+import { WorkerProfile } from '@/lib/types';
 
 const SESSION_TYPES = [
   {
@@ -76,26 +66,15 @@ export default function Home() {
   useEffect(() => {
     const stored = localStorage.getItem('coassure_worker_id');
     if (stored) {
-      fetchWorker(stored);
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchWorker = async (id: string) => {
-    try {
-      const res = await fetch(`/api/worker/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setWorker(data);
+      const profile = getWorkerProfile(stored);
+      if (profile) {
+        setWorker(profile);
       } else {
         localStorage.removeItem('coassure_worker_id');
       }
-    } catch {
-      // Failed to fetch
     }
     setLoading(false);
-  };
+  }, []);
 
   const expiringCerts = worker?.training_records.filter(t => t.status === 'expiring') || [];
   const expiredCerts = worker?.training_records.filter(t => t.status === 'expired') || [];
@@ -130,28 +109,32 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      {/* Header */}
       <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 py-4">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div>
             <h1 className="text-lg font-bold text-zinc-900 dark:text-white">CoAssure</h1>
             <p className="text-xs text-zinc-500">G&rsquo;day, {worker.name.split(' ')[0]}</p>
           </div>
-          <Link href="/profile" className="flex items-center gap-2">
-            <SafetyScore score={worker.safety_score} level={worker.interaction_level} compact />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/settings" className="text-zinc-400 hover:text-zinc-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </Link>
+            <Link href="/profile" className="flex items-center gap-2">
+              <SafetyScore score={worker.safety_score} level={worker.interaction_level} compact />
+            </Link>
+          </div>
         </div>
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        {/* Cert alerts */}
         {(expiringCerts.length > 0 || expiredCerts.length > 0) && (
           <div className="space-y-2">
             {expiredCerts.map(cert => (
               <div key={cert.id} className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
-                <p className="text-sm text-red-800 dark:text-red-300 font-medium">
-                  {cert.cert_name} has expired
-                </p>
+                <p className="text-sm text-red-800 dark:text-red-300 font-medium">{cert.cert_name} has expired</p>
                 <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
                   Expired {cert.expiry_date ? new Date(cert.expiry_date).toLocaleDateString('en-AU') : ''}
                 </p>
@@ -159,9 +142,7 @@ export default function Home() {
             ))}
             {expiringCerts.map(cert => (
               <div key={cert.id} className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
-                <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">
-                  {cert.cert_name} expiring soon
-                </p>
+                <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">{cert.cert_name} expiring soon</p>
                 <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
                   Expires {cert.expiry_date ? new Date(cert.expiry_date).toLocaleDateString('en-AU') : ''}
                 </p>
@@ -170,7 +151,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Entry points — big buttons for dirty gloves */}
         <div className="space-y-3">
           {SESSION_TYPES.map(({ type, label, description, icon }) => (
             <Link
@@ -190,7 +170,6 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Quick stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-center">
             <p className="text-2xl font-bold text-zinc-900 dark:text-white">{worker.total_sessions}</p>
