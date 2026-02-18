@@ -25,6 +25,14 @@ const TYPE_LABELS: Record<string, string> = {
   'reflection': 'Reflection',
 };
 
+const TYPE_DESCRIPTIONS: Record<string, string> = {
+  'pre-start': 'Talk through hazards and controls for the job ahead',
+  'toolbox-talk': 'Facilitate a team safety discussion',
+  'form-assist': 'Fill out a safety form through conversation',
+  'report': 'Capture a near-miss, hazard, or observation',
+  'reflection': 'Capture what the next person should know',
+};
+
 export default function SessionClient({ type }: { type: string }) {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -39,6 +47,10 @@ export default function SessionClient({ type }: { type: string }) {
   const [summary, setSummary] = useState<string | null>(null);
   const [aiAvailable, setAiAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [attendees, setAttendees] = useState<string[]>([]);
+  const [attendeeInput, setAttendeeInput] = useState('');
+  const [showAttendees, setShowAttendees] = useState(type === 'toolbox-talk');
+  const [sessionStartTime] = useState(Date.now());
 
   const startSession = useCallback(async (wId: string) => {
     const profile = getWorkerProfile(wId);
@@ -82,11 +94,10 @@ export default function SessionClient({ type }: { type: string }) {
         const greeting = await sendToAi(systemPrompt, [{ role: 'user', content: 'Starting session' }]);
         addMessage(session.id, 'assistant', greeting);
         setMessages(getMessages(session.id).map(m => ({ id: m.id, role: m.role as Message['role'], content: m.content })));
-      } catch (err) {
+      } catch {
         setError('Could not connect to AI. Check your API settings.');
       }
     } else {
-      // Show message that AI needs configuration
       const welcomeMsg = `Welcome to your ${TYPE_LABELS[type] || 'session'}. To enable AI-assisted conversations, add your Anthropic API key in Settings.`;
       setMessages([{ id: 'welcome', role: 'assistant', content: welcomeMsg }]);
     }
@@ -135,12 +146,20 @@ export default function SessionClient({ type }: { type: string }) {
     const allMsgs = getMessages(sessionId);
     const transcript = allMsgs.map(m => `${m.role === 'user' ? 'Worker' : 'CoAssure'}: ${m.content}`).join('\n\n');
 
-    let sum = 'Session completed. AI summary unavailable.';
-    if (aiAvailable) {
-      try { sum = await generateSummary(transcript); } catch { /* keep default */ }
+    // Add attendees to transcript for toolbox talks
+    let fullTranscript = transcript;
+    if (type === 'toolbox-talk' && attendees.length > 0) {
+      fullTranscript = `Attendees: ${attendees.join(', ')}\n\n${transcript}`;
     }
 
-    completeDbSession(sessionId, sum, transcript);
+    const duration = Math.round((Date.now() - sessionStartTime) / 1000);
+
+    let sum = 'Session completed. AI summary unavailable.';
+    if (aiAvailable) {
+      try { sum = await generateSummary(fullTranscript, type as Session['session_type']); } catch { /* keep default */ }
+    }
+
+    completeDbSession(sessionId, sum, fullTranscript);
     setCompleted(true);
     setSummary(sum);
     setLoading(false);
@@ -149,6 +168,14 @@ export default function SessionClient({ type }: { type: string }) {
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(textInput);
+  };
+
+  const addAttendee = () => {
+    const name = attendeeInput.trim();
+    if (name && !attendees.includes(name)) {
+      setAttendees(prev => [...prev, name]);
+    }
+    setAttendeeInput('');
   };
 
   if (starting) {
@@ -165,15 +192,25 @@ export default function SessionClient({ type }: { type: string }) {
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col">
         <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 py-4">
           <h1 className="text-lg font-bold text-zinc-900 dark:text-white text-center">Session Complete</h1>
+          <p className="text-xs text-zinc-500 text-center mt-0.5">{TYPE_LABELS[type]} &middot; {new Date().toLocaleDateString('en-AU')}</p>
         </div>
-        <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6 space-y-4">
+        <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6 space-y-4 overflow-y-auto">
+          {type === 'toolbox-talk' && attendees.length > 0 && (
+            <div className="bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 rounded-2xl p-4">
+              <h3 className="text-xs font-semibold text-sky-700 dark:text-sky-300 uppercase tracking-wider mb-2">Attendees ({attendees.length})</h3>
+              <p className="text-sm text-sky-800 dark:text-sky-200">{attendees.join(', ')}</p>
+            </div>
+          )}
           <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5">
             <h2 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300 mb-2">Summary</h2>
-            <p className="text-sm text-emerald-700 dark:text-emerald-400 whitespace-pre-wrap">{summary}</p>
+            <div className="text-sm text-emerald-700 dark:text-emerald-400 whitespace-pre-wrap leading-relaxed">{summary}</div>
           </div>
           <div className="flex gap-3">
             <button onClick={() => {
-              if (summary) navigator.clipboard.writeText(`${summary}\n\n---\nGenerated by CoAssure | ${new Date().toLocaleDateString('en-AU')}`);
+              const attendeeText = (type === 'toolbox-talk' && attendees.length > 0)
+                ? `Attendees: ${attendees.join(', ')}\n\n`
+                : '';
+              if (summary) navigator.clipboard.writeText(`${attendeeText}${summary}\n\n---\nGenerated by CoAssure | ${new Date().toLocaleDateString('en-AU')}`);
             }} className="flex-1 bg-sky-600 text-white rounded-xl py-3 text-sm font-semibold hover:bg-sky-700">Copy to Clipboard</button>
             <Link href="/" className="flex-1 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 rounded-xl py-3 text-sm font-medium text-center">Home</Link>
           </div>
@@ -188,7 +225,10 @@ export default function SessionClient({ type }: { type: string }) {
       <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 shrink-0">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <Link href="/" className="text-sky-600 text-sm font-medium">&larr;</Link>
-          <h1 className="text-base font-bold text-zinc-900 dark:text-white">{TYPE_LABELS[type] || 'Session'}</h1>
+          <div className="text-center">
+            <h1 className="text-base font-bold text-zinc-900 dark:text-white">{TYPE_LABELS[type] || 'Session'}</h1>
+            <p className="text-[10px] text-zinc-500">{TYPE_DESCRIPTIONS[type]}</p>
+          </div>
           <button onClick={handleComplete} disabled={loading || messages.length < 2}
             className="text-sm font-medium text-emerald-600 hover:text-emerald-700 disabled:text-zinc-300 disabled:cursor-not-allowed">Done</button>
         </div>
@@ -211,6 +251,39 @@ export default function SessionClient({ type }: { type: string }) {
           <Link href="/settings" className="block text-xs text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg px-3 py-2 text-center">
             AI not configured &mdash; tap to add your API key in Settings
           </Link>
+        </div>
+      )}
+
+      {/* Toolbox talk attendee bar */}
+      {type === 'toolbox-talk' && (
+        <div className="px-4 pt-2 max-w-lg mx-auto w-full shrink-0">
+          <button onClick={() => setShowAttendees(!showAttendees)}
+            className="w-full text-left bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-sm">
+            <span className="text-zinc-500">Attendees:</span>
+            <span className="text-zinc-900 dark:text-white ml-1 font-medium">
+              {attendees.length > 0 ? `${attendees.join(', ')} (${attendees.length})` : 'Tap to add'}
+            </span>
+          </button>
+          {showAttendees && (
+            <div className="mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 space-y-2">
+              <form onSubmit={(e) => { e.preventDefault(); addAttendee(); }} className="flex gap-2">
+                <input type="text" value={attendeeInput} onChange={e => setAttendeeInput(e.target.value)}
+                  placeholder="Name" className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-600 px-3 py-2 text-sm bg-white dark:bg-zinc-800 dark:text-white" />
+                <button type="submit" className="bg-sky-600 text-white rounded-lg px-3 py-2 text-sm font-medium">Add</button>
+              </form>
+              {attendees.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {attendees.map((name, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full px-3 py-1 text-xs">
+                      {name}
+                      <button onClick={() => setAttendees(prev => prev.filter((_, j) => j !== i))}
+                        className="text-zinc-400 hover:text-red-500">&times;</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

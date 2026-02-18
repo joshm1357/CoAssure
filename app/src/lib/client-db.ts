@@ -290,6 +290,32 @@ export function countReports(workerId: string): number {
   return getCollection<Report>('reports').filter(r => r.worker_id === workerId).length;
 }
 
+export function getRecentReports(days: number): Report[] {
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  return getCollection<Report>('reports')
+    .filter(r => r.created_at > cutoff)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function getReports(workerId: string): Report[] {
+  return getCollection<Report>('reports')
+    .filter(r => r.worker_id === workerId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function getRecentSessions(workerId: string, limit: number): Session[] {
+  return getCollection<Session>('sessions')
+    .filter(s => s.worker_id === workerId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, limit);
+}
+
+export function getSessions(workerId: string): Session[] {
+  return getCollection<Session>('sessions')
+    .filter(s => s.worker_id === workerId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
 // --- Worker Profile (computed) ---
 
 function calculateSafetyScore(

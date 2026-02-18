@@ -38,7 +38,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <Link href="/" className="text-sky-600 text-sm font-medium">&larr; Home</Link>
           <h1 className="text-lg font-bold text-zinc-900 dark:text-white">Your Profile</h1>
-          <div className="w-12" />
+          <Link href="/profile/edit" className="text-sky-600 text-sm font-medium">Edit</Link>
         </div>
       </div>
 
