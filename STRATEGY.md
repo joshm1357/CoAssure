@@ -226,6 +226,59 @@ When a worker scans a QR code or photographs a form, CoAssure:
 
 For common platforms (SafetyCulture, Procore, HammerTech), the output can be pushed directly via API. For everything else, it generates a PDF or structured text that the worker pastes in.
 
+### Worker Profiles — Respecting Experience and Training
+
+CoAssure does not treat everyone the same. A 20-year electrician with a spotless safety record and current confined space certification should not be spoken to like a first-year apprentice. That's disrespectful, and it's the fastest way to lose trust with the people who matter most.
+
+**Every worker has a profile that shapes how the AI interacts with them:**
+
+**Training & Certifications:**
+Workers register their training easily — voice or photo of a certificate. Working at Heights, Confined Space, EWP, First Aid, White Card, trade licences, client-specific inductions. The system tracks what's current, what's expiring, and what's missing.
+
+- If a worker has a current Confined Space cert, the AI doesn't explain what atmospheric testing is. It says: "You know the drill — have you done the atmo test?"
+- If a worker does NOT have the cert, the AI flags it: "This looks like it might need a confined space entry — do you have the training for that? Worth checking with your supervisor."
+
+**Experience:**
+Years in the trade, years with the company, types of work regularly performed. The AI uses this to calibrate its tone and depth:
+
+- **Experienced worker:** The AI is brief, peer-to-peer. "One thing — the hoses." It trusts them to know the context.
+- **Newer worker:** The AI is more thorough, more explanatory. "The hoses on these pumps can fail under pressure — check the couplings before you pressurise." Still not patronising, but more supportive.
+
+**Safety Record:**
+A personal safety engagement score built from their CoAssure interactions — not a punishment metric, but a recognition one:
+
+- Conversation quality (specific hazards vs. one-word answers)
+- Near-miss and hazard reports filed
+- Good catches
+- Toolbox talk contributions
+- Training currency
+
+Workers with strong records get acknowledged: "You've been flagging good stuff lately — keep it up." Workers with declining engagement get a gentle nudge, not a warning.
+
+**How it affects the AI's behaviour:**
+
+| Worker Profile | AI Behaviour |
+|---|---|
+| Experienced, current training, strong record | Brief, peer-to-peer. Trusts their judgment. Focuses on what's unusual about today (weather, location, crowd-sourced data) rather than basics. |
+| Experienced, training expiring | Reminds about expiry naturally: "Heads up — your confined space cert expires next month." |
+| Mid-level, good record | Balanced. Checks key controls, asks 1–2 challenge questions. |
+| Newer worker, limited training | More supportive, more explanatory. Walks through steps. Suggests consulting senior workers or supervisors for unfamiliar tasks. |
+| Any worker, unfamiliar site/task | Regardless of experience, if the task or site is new to this worker, the AI provides more context. Experience in one area doesn't mean expertise in another. |
+
+**The principle:** Treat people the way an experienced colleague would — with respect for what they know, awareness of what they might not, and a focus on what's different about today.
+
+**Registration is easy:**
+- Voice: "I've got my confined space, working at heights, and EWP. All current."
+- Photo: Snap a photo of the certificate. CoAssure reads it (OCR), extracts the details, and logs it.
+- Manual: Quick form in the app — select training type, enter date, done.
+- Org-managed: For enterprise clients, training records can be synced from the company's training management system.
+
+**Expiry tracking:**
+The system knows when certifications expire and incorporates this naturally:
+- 30 days out: "Your EWP ticket expires on the 15th. Worth getting that renewal booked."
+- Expired: "Your working at heights cert expired last month. You might need to sort that before this job."
+- On the dashboard: Managers see a training currency view across their team — who's current, who's expiring, who has gaps.
+
 ---
 
 ## Positioning: Assistant First, Platform When Ready
