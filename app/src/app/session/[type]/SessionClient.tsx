@@ -118,8 +118,11 @@ export default function SessionClient({ type }: { type: string }) {
     const stored = localStorage.getItem('coassure_worker_id');
     if (!stored) { router.push('/profile/setup'); return; }
     setWorkerId(stored);
-    // For form-assist, only start when a template is selected (or skipped)
-    if (type === 'form-assist' && showFormSelector && !selectedFormTemplate) return;
+    // For form-assist, show template selector instead of starting session
+    if (type === 'form-assist' && showFormSelector && !selectedFormTemplate) {
+      setStarting(false);
+      return;
+    }
     startSession(stored);
   }, [router, startSession, type, showFormSelector, selectedFormTemplate]);
 
