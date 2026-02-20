@@ -1,0 +1,89 @@
+{
+  "id": "standard-site-diary",
+  "form_type": "site_diary",
+  "name": "Site Diary Entry",
+  "description": "Daily record of site activities, conditions, and events. End-of-day record keeping.",
+  "version": 1,
+  "is_standard": true,
+  "schema": {
+    "sections": [
+      {
+        "id": "header",
+        "title": "Entry Details",
+        "fields": [
+          { "id": "date", "label": "Date", "type": "date", "required": true, "auto_fill": "today" },
+          { "id": "site_name", "label": "Site / Project Name", "type": "text", "required": true, "auto_fill": "session.site" },
+          { "id": "recorded_by", "label": "Recorded By", "type": "text", "required": true, "auto_fill": "worker.name" },
+          { "id": "weather_am", "label": "Weather (AM)", "type": "text", "auto_fill": "weather.conditions" },
+          { "id": "weather_pm", "label": "Weather (PM)", "type": "text" },
+          { "id": "temp_high", "label": "Temperature High", "type": "text", "auto_fill": "weather.temp" }
+        ]
+      },
+      {
+        "id": "workforce",
+        "title": "Workforce on Site",
+        "repeatable": true,
+        "min_rows": 0,
+        "max_rows": 30,
+        "fields": [
+          { "id": "trade", "label": "Trade / Company", "type": "text" },
+          { "id": "headcount", "label": "Number of Workers", "type": "number" },
+          { "id": "hours", "label": "Hours on Site", "type": "text" }
+        ]
+      },
+      {
+        "id": "work_completed",
+        "title": "Work Completed Today",
+        "fields": [
+          { "id": "work_summary", "label": "Summary of work completed", "type": "textarea", "required": true, "ai_prompt": "What work was completed on site today?" }
+        ]
+      },
+      {
+        "id": "deliveries",
+        "title": "Deliveries & Materials",
+        "fields": [
+          { "id": "deliveries", "label": "Deliveries received today", "type": "textarea", "ai_prompt": "Any deliveries or materials received today?" }
+        ]
+      },
+      {
+        "id": "visitors",
+        "title": "Visitors",
+        "fields": [
+          { "id": "visitors", "label": "Visitors on site today", "type": "textarea" }
+        ]
+      },
+      {
+        "id": "safety",
+        "title": "Safety Observations",
+        "fields": [
+          { "id": "safety_observations", "label": "Safety observations, incidents, or near-misses", "type": "textarea", "ai_prompt": "Any safety observations, near-misses, or incidents today?" },
+          { "id": "safety_actions", "label": "Actions taken / required", "type": "textarea" }
+        ]
+      },
+      {
+        "id": "instructions",
+        "title": "Instructions & Communications",
+        "fields": [
+          { "id": "instructions_received", "label": "Instructions received", "type": "textarea" },
+          { "id": "instructions_given", "label": "Instructions given", "type": "textarea" }
+        ]
+      },
+      {
+        "id": "issues",
+        "title": "Issues & Delays",
+        "fields": [
+          { "id": "issues", "label": "Issues, delays, or variations", "type": "textarea", "ai_prompt": "Any issues, delays, or hold-ups today?" },
+          { "id": "tomorrow_plan", "label": "Planned work for tomorrow", "type": "textarea", "ai_prompt": "What's planned for tomorrow?" }
+        ]
+      },
+      {
+        "id": "photos",
+        "title": "Photos",
+        "fields": [
+          { "id": "photo_notes", "label": "Photo references / descriptions", "type": "textarea" }
+        ]
+      }
+    ]
+  },
+  "ai_instructions": "Walk through this site diary like an end-of-day debrief. Start by asking what work was done today. Ask about any deliveries, visitors, safety observations. Check if there were any issues or delays. Ask what's planned for tomorrow. Keep it conversational — this should feel like a 5-minute handover chat, not form-filling. Auto-fill weather and date."
+}

@@ -1,0 +1,182 @@
+{
+  "id": "standard-swms",
+  "form_type": "swms",
+  "name": "Safe Work Method Statement (SWMS)",
+  "description": "Legally required for all 18 categories of high-risk construction work under WHS Regulations s291. Must be prepared before work commences.",
+  "version": 1,
+  "is_standard": true,
+  "schema": {
+    "sections": [
+      {
+        "id": "document_control",
+        "title": "Document Control",
+        "fields": [
+          { "id": "swms_ref", "label": "SWMS Reference Number", "type": "text", "required": true },
+          { "id": "version", "label": "Version", "type": "text", "required": true, "default": "1.0" },
+          { "id": "date_prepared", "label": "Date Prepared", "type": "date", "required": true, "auto_fill": "today" },
+          { "id": "review_date", "label": "Review Date", "type": "date" },
+          { "id": "prepared_by", "label": "Prepared By", "type": "text", "required": true, "auto_fill": "worker.name" }
+        ]
+      },
+      {
+        "id": "pcbu_info",
+        "title": "PCBU / Company Information",
+        "fields": [
+          { "id": "company_name", "label": "Company Name", "type": "text", "required": true, "auto_fill": "org.name" },
+          { "id": "abn", "label": "ABN", "type": "text", "auto_fill": "org.abn" },
+          { "id": "company_address", "label": "Address", "type": "text" },
+          { "id": "contact_person", "label": "Contact Person", "type": "text", "required": true },
+          { "id": "contact_phone", "label": "Contact Phone", "type": "text", "required": true }
+        ]
+      },
+      {
+        "id": "project_info",
+        "title": "Project Information",
+        "fields": [
+          { "id": "project_name", "label": "Project / Site Name", "type": "text", "required": true, "auto_fill": "session.site" },
+          { "id": "site_address", "label": "Site Address", "type": "text", "required": true },
+          { "id": "principal_contractor", "label": "Principal Contractor", "type": "text" },
+          { "id": "pc_contact", "label": "Principal Contractor Contact", "type": "text" },
+          { "id": "project_phase", "label": "Project Phase", "type": "select", "options": ["Demolition", "Excavation", "Structure", "Fitout", "Commissioning", "Maintenance", "Other"] }
+        ]
+      },
+      {
+        "id": "hrcw",
+        "title": "High-Risk Construction Work Categories",
+        "description": "Identify which categories of high-risk construction work apply (WHS Regs s291).",
+        "fields": [
+          { "id": "hrcw_falls", "label": "Risk of falling more than 2 metres", "type": "checkbox" },
+          { "id": "hrcw_demolition", "label": "Demolition of load-bearing structure", "type": "checkbox" },
+          { "id": "hrcw_trenches", "label": "Trenches or shafts deeper than 1.5 metres", "type": "checkbox" },
+          { "id": "hrcw_powered_plant", "label": "Use of powered mobile plant", "type": "checkbox" },
+          { "id": "hrcw_traffic", "label": "Work near traffic or public", "type": "checkbox" },
+          { "id": "hrcw_temp_extremes", "label": "Artificial extremes of temperature", "type": "checkbox" },
+          { "id": "hrcw_structural", "label": "Structural alterations or temporary propping", "type": "checkbox" },
+          { "id": "hrcw_electrical", "label": "Energised electrical installations or services", "type": "checkbox" },
+          { "id": "hrcw_confined", "label": "Confined spaces", "type": "checkbox" },
+          { "id": "hrcw_tiltup", "label": "Tilt-up or precast concrete elements", "type": "checkbox" },
+          { "id": "hrcw_telecom", "label": "Telecommunications towers", "type": "checkbox" },
+          { "id": "hrcw_diving", "label": "Diving work", "type": "checkbox" },
+          { "id": "hrcw_atmosphere", "label": "Contaminated or flammable atmosphere", "type": "checkbox" },
+          { "id": "hrcw_explosives", "label": "Use of explosives", "type": "checkbox" },
+          { "id": "hrcw_gas", "label": "Work on pressurised gas mains or piping", "type": "checkbox" },
+          { "id": "hrcw_chemical", "label": "Work on chemical, fuel, or refrigerant lines", "type": "checkbox" },
+          { "id": "hrcw_water", "label": "Work on or near water with risk of drowning", "type": "checkbox" },
+          { "id": "hrcw_asbestos", "label": "Work involving asbestos removal", "type": "checkbox" }
+        ]
+      },
+      {
+        "id": "risk_assessment",
+        "title": "Risk Assessment — Work Activities",
+        "description": "For each work activity, identify hazards, controls, responsible persons, and monitoring methods.",
+        "repeatable": true,
+        "min_rows": 1,
+        "max_rows": 25,
+        "fields": [
+          { "id": "activity", "label": "Work Activity / Step", "type": "textarea", "required": true, "ai_prompt": "What's the activity or step?" },
+          { "id": "hazards_risks", "label": "Hazards & Associated Risks", "type": "textarea", "required": true, "ai_prompt": "What are the hazards and risks for this activity?" },
+          {
+            "id": "control_hierarchy",
+            "label": "Hierarchy Level",
+            "type": "select",
+            "options": ["Elimination", "Substitution", "Isolation", "Engineering", "Administrative", "PPE"],
+            "required": true
+          },
+          { "id": "control_measures", "label": "Specific Control Measures", "type": "textarea", "required": true, "ai_prompt": "What specific controls will manage this risk?" },
+          { "id": "responsible_person", "label": "Person Responsible", "type": "text", "required": true },
+          { "id": "monitoring_method", "label": "How will controls be monitored and reviewed?", "type": "textarea", "required": true }
+        ]
+      },
+      {
+        "id": "equipment",
+        "title": "Plant, Equipment & Materials",
+        "fields": [
+          { "id": "equipment_list", "label": "List all plant, equipment, and materials to be used", "type": "textarea", "required": true, "ai_prompt": "What plant, tools, and materials will be used?" }
+        ]
+      },
+      {
+        "id": "ppe",
+        "title": "PPE Requirements",
+        "fields": [
+          { "id": "ppe_list", "label": "Required PPE for this work", "type": "textarea", "required": true, "ai_prompt": "What PPE is required?" }
+        ]
+      },
+      {
+        "id": "training_licences",
+        "title": "Licences, Training & Competency",
+        "fields": [
+          { "id": "required_licences", "label": "Licences and tickets required", "type": "textarea", "required": true, "auto_fill": "worker.training" },
+          { "id": "required_training", "label": "Specific training or inductions required", "type": "textarea" }
+        ]
+      },
+      {
+        "id": "emergency",
+        "title": "Emergency Procedures",
+        "fields": [
+          { "id": "emergency_procedures", "label": "Emergency procedures relevant to this work", "type": "textarea", "required": true },
+          { "id": "emergency_contacts", "label": "Emergency contacts and numbers", "type": "textarea" }
+        ]
+      },
+      {
+        "id": "legislation",
+        "title": "Relevant Legislation & Codes of Practice",
+        "fields": [
+          { "id": "references", "label": "Legislation, standards, and codes of practice referenced", "type": "textarea" }
+        ]
+      },
+      {
+        "id": "consultation",
+        "title": "Consultation Record",
+        "description": "Workers consulted in the preparation of this SWMS.",
+        "repeatable": true,
+        "min_rows": 1,
+        "max_rows": 20,
+        "fields": [
+          { "id": "consult_name", "label": "Name", "type": "text", "required": true },
+          { "id": "consult_position", "label": "Position / Trade", "type": "text" },
+          { "id": "consult_signature", "label": "Signature", "type": "signature" },
+          { "id": "consult_date", "label": "Date", "type": "date", "auto_fill": "today" }
+        ]
+      },
+      {
+        "id": "worker_briefing",
+        "title": "Worker Briefing & Acknowledgement",
+        "description": "I have been briefed on this SWMS, understand the hazards and controls, and agree to work in accordance with this SWMS.",
+        "repeatable": true,
+        "min_rows": 1,
+        "max_rows": 30,
+        "fields": [
+          { "id": "briefing_name", "label": "Name", "type": "text", "required": true },
+          { "id": "briefing_company", "label": "Company / Trade", "type": "text" },
+          { "id": "briefing_signature", "label": "Signature", "type": "signature", "required": true },
+          { "id": "briefing_date", "label": "Date", "type": "date", "auto_fill": "today" }
+        ]
+      },
+      {
+        "id": "approval",
+        "title": "Supervisor / Manager Approval",
+        "fields": [
+          { "id": "approver_name", "label": "Name", "type": "text", "required": true },
+          { "id": "approver_position", "label": "Position", "type": "text", "required": true },
+          { "id": "approver_signature", "label": "Signature", "type": "signature", "required": true },
+          { "id": "approver_date", "label": "Date", "type": "date", "auto_fill": "today" }
+        ]
+      },
+      {
+        "id": "review_log",
+        "title": "Review Log",
+        "description": "Record all reviews and revisions to this SWMS.",
+        "repeatable": true,
+        "min_rows": 0,
+        "max_rows": 10,
+        "fields": [
+          { "id": "review_date", "label": "Date", "type": "date" },
+          { "id": "review_reason", "label": "Reason for Review", "type": "text" },
+          { "id": "review_changes", "label": "Changes Made", "type": "textarea" },
+          { "id": "reviewed_by", "label": "Reviewed By", "type": "text" }
+        ]
+      }
+    ]
+  },
+  "ai_instructions": "This is a legally required document for high-risk construction work. Walk through it carefully but conversationally. Start by asking what high-risk work is being done and identify which of the 18 HRCW categories apply. Then work through the risk assessment: for each activity, ask about hazards, discuss controls using the hierarchy, and confirm who's responsible. Be thorough but not slow — a SWMS review conversation should take 10-15 minutes, not 45. Auto-fill what you can. End with a structured summary that maps to the form."
+}

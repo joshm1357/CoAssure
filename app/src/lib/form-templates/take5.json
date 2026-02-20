@@ -1,0 +1,120 @@
+{
+  "id": "standard-take5",
+  "form_type": "take5",
+  "name": "Take 5 — Personal Risk Assessment",
+  "description": "5-minute personal risk assessment before starting any task. Follows the SLACM process (Stop, Look, Assess, Control, Monitor).",
+  "version": 1,
+  "is_standard": true,
+  "schema": {
+    "sections": [
+      {
+        "id": "header",
+        "title": "Job Details",
+        "fields": [
+          { "id": "worker_name", "label": "Worker Name", "type": "text", "required": true, "auto_fill": "worker.name" },
+          { "id": "date", "label": "Date", "type": "date", "required": true, "auto_fill": "today" },
+          { "id": "time", "label": "Time", "type": "time", "required": true, "auto_fill": "now" },
+          { "id": "location", "label": "Location / Site", "type": "text", "required": true, "auto_fill": "session.location" },
+          { "id": "task_description", "label": "Task Description", "type": "textarea", "required": true, "ai_prompt": "What job are you doing today?" },
+          { "id": "supervisor", "label": "Supervisor Name", "type": "text", "required": false }
+        ]
+      },
+      {
+        "id": "stop_think",
+        "title": "Step 1 — Stop & Think",
+        "description": "Before you start, check these conditions.",
+        "fields": [
+          { "id": "right_tools", "label": "Do I have the right tools and equipment for this job?", "type": "yes_no", "required": true, "stop_if_no": true },
+          { "id": "trained", "label": "Am I trained and competent for this task?", "type": "yes_no", "required": true, "stop_if_no": true },
+          { "id": "conditions_changed", "label": "Have conditions changed since the JSA/SWMS was prepared?", "type": "yes_no", "required": true, "ai_prompt": "Has anything changed on site since the SWMS was done?" },
+          { "id": "others_affected", "label": "Could other workers or trades be affected by my work?", "type": "yes_no", "required": true },
+          { "id": "jsa_swms_current", "label": "Is there a current JSA/SWMS for this work?", "type": "yes_no", "required": true, "stop_if_no": true },
+          { "id": "fit_for_work", "label": "Am I fit for work today? (not fatigued, ill, or affected by medication/substances)", "type": "yes_no", "required": true, "stop_if_no": true }
+        ]
+      },
+      {
+        "id": "look_hazards",
+        "title": "Step 2 — Look & Identify Hazards",
+        "description": "Check for hazards relevant to your task. Tick all that apply.",
+        "fields": [
+          { "id": "hazard_heights", "label": "Working at heights (>2m)", "type": "checkbox" },
+          { "id": "hazard_electrical", "label": "Electrical hazards", "type": "checkbox" },
+          { "id": "hazard_manual_handling", "label": "Manual handling / heavy lifting", "type": "checkbox" },
+          { "id": "hazard_confined_space", "label": "Confined spaces", "type": "checkbox" },
+          { "id": "hazard_hot_work", "label": "Hot work (welding, cutting, grinding)", "type": "checkbox" },
+          { "id": "hazard_mobile_plant", "label": "Mobile plant / vehicles", "type": "checkbox" },
+          { "id": "hazard_falling_objects", "label": "Falling objects / overhead work", "type": "checkbox" },
+          { "id": "hazard_chemicals", "label": "Chemicals / hazardous substances / dust", "type": "checkbox" },
+          { "id": "hazard_noise", "label": "Excessive noise", "type": "checkbox" },
+          { "id": "hazard_weather", "label": "Extreme weather (heat, wind, rain, UV)", "type": "checkbox", "auto_fill": "weather.hazards" },
+          { "id": "hazard_excavation", "label": "Excavations / trenches", "type": "checkbox" },
+          { "id": "hazard_services", "label": "Underground/overhead services", "type": "checkbox" },
+          { "id": "hazard_housekeeping", "label": "Poor housekeeping / trip hazards", "type": "checkbox" },
+          { "id": "hazard_traffic", "label": "Traffic / public access", "type": "checkbox" },
+          { "id": "hazard_other", "label": "Other hazards", "type": "text" }
+        ]
+      },
+      {
+        "id": "assess_risk",
+        "title": "Step 3 — Assess the Risk",
+        "description": "For the hazards identified, what's the risk level?",
+        "fields": [
+          {
+            "id": "risk_rating",
+            "label": "Overall Risk Rating",
+            "type": "risk_matrix",
+            "required": true,
+            "options": {
+              "likelihood": ["Rare", "Unlikely", "Possible", "Likely", "Almost Certain"],
+              "consequence": ["Insignificant", "Minor", "Moderate", "Major", "Catastrophic"],
+              "matrix": [
+                ["Low", "Low", "Medium", "High", "High"],
+                ["Low", "Medium", "Medium", "High", "Extreme"],
+                ["Medium", "Medium", "High", "Extreme", "Extreme"],
+                ["High", "High", "Extreme", "Extreme", "Extreme"],
+                ["High", "Extreme", "Extreme", "Extreme", "Extreme"]
+              ]
+            },
+            "ai_prompt": "Based on the hazards, how likely is something going wrong and how bad could it be?"
+          }
+        ]
+      },
+      {
+        "id": "control",
+        "title": "Step 4 — Control Measures",
+        "description": "What controls will you put in place? Use the hierarchy: Eliminate > Substitute > Isolate > Engineer > Admin > PPE.",
+        "fields": [
+          { "id": "controls", "label": "Control measures for identified hazards", "type": "textarea", "required": true, "ai_prompt": "What controls are you putting in place for those hazards?" },
+          { "id": "ppe_hard_hat", "label": "Hard hat", "type": "checkbox" },
+          { "id": "ppe_safety_glasses", "label": "Safety glasses", "type": "checkbox" },
+          { "id": "ppe_hi_vis", "label": "Hi-vis vest", "type": "checkbox" },
+          { "id": "ppe_gloves", "label": "Gloves", "type": "checkbox" },
+          { "id": "ppe_steel_caps", "label": "Steel-cap boots", "type": "checkbox" },
+          { "id": "ppe_hearing", "label": "Hearing protection", "type": "checkbox" },
+          { "id": "ppe_harness", "label": "Safety harness", "type": "checkbox" },
+          { "id": "ppe_respiratory", "label": "Respiratory protection", "type": "checkbox" },
+          { "id": "ppe_sunscreen", "label": "Sunscreen / sun protection", "type": "checkbox" },
+          { "id": "ppe_other", "label": "Other PPE", "type": "text" }
+        ]
+      },
+      {
+        "id": "monitor",
+        "title": "Step 5 — Monitor",
+        "description": "How will you monitor conditions throughout the task?",
+        "fields": [
+          { "id": "monitoring_notes", "label": "Monitoring plan / notes", "type": "textarea", "ai_prompt": "Anything to keep an eye on while you're working?" },
+          { "id": "proceed", "label": "Safe to proceed?", "type": "yes_no", "required": true, "stop_if_no": true }
+        ]
+      },
+      {
+        "id": "signoff",
+        "title": "Sign-off",
+        "fields": [
+          { "id": "worker_signature", "label": "Worker Signature", "type": "signature", "required": true },
+          { "id": "supervisor_signature", "label": "Supervisor Signature (if required)", "type": "signature", "required": false }
+        ]
+      }
+    ]
+  },
+  "ai_instructions": "Walk through this Take 5 conversationally. Start by asking what the job is. Then ask about conditions and hazards specific to THAT job — don't read out every checkbox. Use the worker's answers to identify which hazards apply, suggest any they might have missed, and confirm controls. Auto-fill what you can (date, location, weather). End by asking if it's safe to proceed. Keep it under 5 minutes."
+}

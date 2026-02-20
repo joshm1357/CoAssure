@@ -4,6 +4,7 @@
 import { WorkerProfile, WeatherData, Session, Report } from './types';
 import { getWeatherHazards } from './weather';
 import { getApiProxyUrl, getApiKey, getRecentReports, getRecentSessions } from './client-db';
+import { FormTemplate, buildFormPromptContext } from './form-templates';
 
 // --- Crowd-sourced context ---
 
@@ -231,7 +232,8 @@ export function buildSystemPrompt(
   profile: WorkerProfile,
   sessionType: Session['session_type'],
   weather: WeatherData | null,
-  location: string | null
+  location: string | null,
+  formTemplate?: FormTemplate | null
 ): string {
   const weatherHazards = weather ? getWeatherHazards(weather) : [];
   const interactionGuidance = getInteractionGuidance(profile);
@@ -290,7 +292,7 @@ ${trainingContext}${certAlerts}
 ${weatherContext}${locationContext}${timeContext}${hazardContext}${historyContext}
 
 ${sessionInstructions}
-
+${formTemplate && sessionType === 'form-assist' ? `\n${buildFormPromptContext(formTemplate)}` : ''}
 ${behavioralDesign}
 
 VOICE-FIRST RULES:

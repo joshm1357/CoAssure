@@ -9,6 +9,7 @@ import WeatherBanner from '@/components/WeatherBanner';
 import { getWorkerProfile, createSession as createDbSession, addMessage, getMessages, completeSession as completeDbSession } from '@/lib/client-db';
 import { getWeather, getWeatherHazards } from '@/lib/weather';
 import { buildSystemPrompt, sendToAi, isAiConfigured, generateSummary } from '@/lib/client-conversation';
+import { getAllTemplates, FormTemplate } from '@/lib/form-templates';
 import type { WeatherData, Session } from '@/lib/types';
 
 interface Message {
@@ -51,6 +52,8 @@ export default function SessionClient({ type }: { type: string }) {
   const [attendeeInput, setAttendeeInput] = useState('');
   const [showAttendees, setShowAttendees] = useState(type === 'toolbox-talk');
   const [sessionStartTime] = useState(Date.now());
+  const [selectedFormTemplate, setSelectedFormTemplate] = useState<FormTemplate | null>(null);
+  const [showFormSelector, setShowFormSelector] = useState(type === 'form-assist');
 
   const startSession = useCallback(async (wId: string) => {
     const profile = getWorkerProfile(wId);
@@ -86,10 +89,16 @@ export default function SessionClient({ type }: { type: string }) {
     });
     setSessionId(session.id);
 
+    // For form-assist without a selected template, show selector instead of AI greeting
+    if (type === 'form-assist' && !selectedFormTemplate) {
+      setStarting(false);
+      return;
+    }
+
     // Get AI greeting if configured
     if (isAiConfigured()) {
       try {
-        const systemPrompt = buildSystemPrompt(profile, type as Session['session_type'], wx, null);
+        const systemPrompt = buildSystemPrompt(profile, type as Session['session_type'], wx, null, selectedFormTemplate);
         addMessage(session.id, 'user', 'Starting session');
         const greeting = await sendToAi(systemPrompt, [{ role: 'user', content: 'Starting session' }]);
         addMessage(session.id, 'assistant', greeting);
@@ -103,14 +112,16 @@ export default function SessionClient({ type }: { type: string }) {
     }
 
     setStarting(false);
-  }, [type]);
+  }, [type, selectedFormTemplate]);
 
   useEffect(() => {
     const stored = localStorage.getItem('coassure_worker_id');
     if (!stored) { router.push('/profile/setup'); return; }
     setWorkerId(stored);
+    // For form-assist, only start when a template is selected (or skipped)
+    if (type === 'form-assist' && showFormSelector && !selectedFormTemplate) return;
     startSession(stored);
-  }, [router, startSession]);
+  }, [router, startSession, type, showFormSelector, selectedFormTemplate]);
 
   const sendMessage = useCallback(async (text: string) => {
     if (!sessionId || !text.trim() || loading || !workerId || !aiAvailable) return;
@@ -129,7 +140,7 @@ export default function SessionClient({ type }: { type: string }) {
         .filter(m => m.content !== 'Starting session')
         .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-      const systemPrompt = buildSystemPrompt(profile, type as Session['session_type'], weather, null);
+      const systemPrompt = buildSystemPrompt(profile, type as Session['session_type'], weather, null, selectedFormTemplate);
       const response = await sendToAi(systemPrompt, allMsgs);
       addMessage(sessionId, 'assistant', response);
       setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: response }]);
@@ -137,7 +148,7 @@ export default function SessionClient({ type }: { type: string }) {
       setError('AI response failed. Check your connection or API settings.');
     }
     setLoading(false);
-  }, [sessionId, loading, workerId, aiAvailable, weather, type]);
+  }, [sessionId, loading, workerId, aiAvailable, weather, type, selectedFormTemplate]);
 
   const handleComplete = async () => {
     if (!sessionId) return;
@@ -251,6 +262,50 @@ export default function SessionClient({ type }: { type: string }) {
           <Link href="/settings" className="block text-xs text-amber-700 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400 rounded-lg px-3 py-2 text-center">
             AI not configured &mdash; tap to add your API key in Settings
           </Link>
+        </div>
+      )}
+
+      {/* Form template selector for form-assist */}
+      {type === 'form-assist' && showFormSelector && !selectedFormTemplate && (
+        <div className="px-4 pt-3 max-w-lg mx-auto w-full shrink-0">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Which form are you filling out?</h3>
+            <div className="space-y-2">
+              {getAllTemplates().map(template => (
+                <button
+                  key={template.id}
+                  onClick={() => {
+                    setSelectedFormTemplate(template);
+                    setShowFormSelector(false);
+                  }}
+                  className="w-full text-left bg-zinc-50 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-sky-950/30 border border-zinc-200 dark:border-zinc-700 hover:border-sky-300 dark:hover:border-sky-700 rounded-xl px-4 py-3 transition-colors"
+                >
+                  <p className="text-sm font-medium text-zinc-900 dark:text-white">{template.name}</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">{template.description}</p>
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-zinc-400">Select a form type, or just start talking and the AI will help you figure out which form to use.</p>
+            <button
+              onClick={() => {
+                setShowFormSelector(false);
+              }}
+              className="text-xs text-sky-600 font-medium hover:text-sky-700"
+            >
+              Skip — let AI decide
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Show selected form badge */}
+      {type === 'form-assist' && selectedFormTemplate && (
+        <div className="px-4 pt-2 max-w-lg mx-auto w-full shrink-0">
+          <div className="flex items-center gap-2 bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 rounded-lg px-3 py-2">
+            <span className="text-xs text-sky-700 dark:text-sky-300 font-medium flex-1">{selectedFormTemplate.name}</span>
+            <button onClick={() => { setSelectedFormTemplate(null); setShowFormSelector(true); }}
+              className="text-xs text-sky-500 hover:text-sky-700">Change</button>
+          </div>
         </div>
       )}
 

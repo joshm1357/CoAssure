@@ -1,0 +1,130 @@
+{
+  "id": "standard-jsa",
+  "form_type": "jsa",
+  "name": "Job Safety Analysis (JSA)",
+  "description": "Task-specific risk assessment. Breaks the job into steps, identifies hazards per step, and confirms control measures.",
+  "version": 1,
+  "is_standard": true,
+  "schema": {
+    "sections": [
+      {
+        "id": "header",
+        "title": "Job Details",
+        "fields": [
+          { "id": "company_name", "label": "Company Name", "type": "text", "required": true, "auto_fill": "org.name" },
+          { "id": "site_name", "label": "Site / Project Name", "type": "text", "required": true, "auto_fill": "session.site" },
+          { "id": "jsa_number", "label": "JSA Reference Number", "type": "text", "required": false },
+          { "id": "date", "label": "Date", "type": "date", "required": true, "auto_fill": "today" },
+          { "id": "revision", "label": "Revision Number", "type": "text", "required": false, "default": "1" },
+          { "id": "task_description", "label": "Activity / Task Description", "type": "textarea", "required": true, "ai_prompt": "Describe the job you're doing today — what are the main activities?" },
+          { "id": "location", "label": "Location on Site", "type": "text", "required": true, "auto_fill": "session.location" },
+          { "id": "prepared_by", "label": "Prepared By", "type": "text", "required": true, "auto_fill": "worker.name" },
+          { "id": "permits_required", "label": "Permits Required?", "type": "yes_no", "required": true },
+          { "id": "permit_types", "label": "If yes, which permits?", "type": "text", "show_if": "permits_required:yes" }
+        ]
+      },
+      {
+        "id": "risk_assessment",
+        "title": "Risk Assessment",
+        "description": "Break the job into steps. For each step, identify hazards and controls.",
+        "repeatable": true,
+        "min_rows": 1,
+        "max_rows": 15,
+        "fields": [
+          { "id": "step_number", "label": "Step #", "type": "number", "auto_increment": true },
+          { "id": "job_step", "label": "Job Step / Activity", "type": "textarea", "required": true, "ai_prompt": "What's the next step in the job?" },
+          { "id": "hazards", "label": "Hazards for this step", "type": "textarea", "required": true, "ai_prompt": "What could go wrong during this step?" },
+          {
+            "id": "risk_before",
+            "label": "Risk Rating (before controls)",
+            "type": "risk_matrix",
+            "required": true,
+            "options": {
+              "likelihood": ["Rare", "Unlikely", "Possible", "Likely", "Almost Certain"],
+              "consequence": ["Insignificant", "Minor", "Moderate", "Major", "Catastrophic"]
+            }
+          },
+          { "id": "controls", "label": "Control Measures", "type": "textarea", "required": true, "ai_prompt": "What controls will you put in place for this step?" },
+          {
+            "id": "risk_after",
+            "label": "Risk Rating (after controls)",
+            "type": "risk_matrix",
+            "required": true,
+            "options": {
+              "likelihood": ["Rare", "Unlikely", "Possible", "Likely", "Almost Certain"],
+              "consequence": ["Insignificant", "Minor", "Moderate", "Major", "Catastrophic"]
+            }
+          },
+          { "id": "responsible", "label": "Responsible Person", "type": "text", "required": true }
+        ]
+      },
+      {
+        "id": "ppe",
+        "title": "PPE Requirements",
+        "fields": [
+          { "id": "ppe_hard_hat", "label": "Hard hat", "type": "checkbox" },
+          { "id": "ppe_safety_glasses", "label": "Safety glasses / goggles", "type": "checkbox" },
+          { "id": "ppe_hi_vis", "label": "Hi-vis clothing", "type": "checkbox" },
+          { "id": "ppe_gloves", "label": "Gloves (type: ___)", "type": "checkbox_text" },
+          { "id": "ppe_steel_caps", "label": "Steel-cap boots", "type": "checkbox" },
+          { "id": "ppe_hearing", "label": "Hearing protection", "type": "checkbox" },
+          { "id": "ppe_harness", "label": "Fall arrest harness", "type": "checkbox" },
+          { "id": "ppe_respiratory", "label": "Respiratory protection (type: ___)", "type": "checkbox_text" },
+          { "id": "ppe_face_shield", "label": "Face shield", "type": "checkbox" },
+          { "id": "ppe_other", "label": "Other PPE", "type": "text" }
+        ]
+      },
+      {
+        "id": "plant_equipment",
+        "title": "Plant & Equipment",
+        "fields": [
+          { "id": "equipment_list", "label": "List all tools, plant, and equipment to be used", "type": "textarea", "required": true, "ai_prompt": "What tools and equipment will you need for this job?" },
+          { "id": "pre_start_checks", "label": "Have pre-start checks been completed on all plant?", "type": "yes_no" }
+        ]
+      },
+      {
+        "id": "training",
+        "title": "Training & Competency",
+        "fields": [
+          { "id": "licences_required", "label": "Licences / tickets required for this work", "type": "textarea", "auto_fill": "worker.training" },
+          { "id": "induction_current", "label": "Site induction current?", "type": "yes_no", "required": true }
+        ]
+      },
+      {
+        "id": "emergency",
+        "title": "Emergency Procedures",
+        "fields": [
+          { "id": "emergency_contact", "label": "Emergency Contact / Number", "type": "text" },
+          { "id": "muster_point", "label": "Muster Point", "type": "text" },
+          { "id": "first_aid", "label": "First Aid Kit Location", "type": "text" },
+          { "id": "nearest_hospital", "label": "Nearest Hospital", "type": "text" }
+        ]
+      },
+      {
+        "id": "worker_signoff",
+        "title": "Worker Acknowledgement",
+        "description": "I have read and understood this JSA, and agree to carry out the work in accordance with the identified controls.",
+        "repeatable": true,
+        "min_rows": 1,
+        "max_rows": 20,
+        "fields": [
+          { "id": "signoff_name", "label": "Name", "type": "text", "required": true },
+          { "id": "signoff_company", "label": "Company", "type": "text" },
+          { "id": "signoff_signature", "label": "Signature", "type": "signature", "required": true },
+          { "id": "signoff_date", "label": "Date", "type": "date", "auto_fill": "today" }
+        ]
+      },
+      {
+        "id": "supervisor_signoff",
+        "title": "Supervisor / Manager Approval",
+        "fields": [
+          { "id": "supervisor_name", "label": "Name", "type": "text", "required": true },
+          { "id": "supervisor_position", "label": "Position", "type": "text" },
+          { "id": "supervisor_signature", "label": "Signature", "type": "signature", "required": true },
+          { "id": "supervisor_date", "label": "Date", "type": "date", "auto_fill": "today" }
+        ]
+      }
+    ]
+  },
+  "ai_instructions": "Walk through this JSA conversationally. Start by asking what the overall job is. Then break it into logical steps — ask 'What's the first thing you do?' and work through sequentially. For each step, ask about hazards specific to that step and what controls are in place. Challenge generic answers ('be careful' → 'how specifically?'). Suggest hazards they might have missed based on the trade and conditions. Auto-fill date, location, weather, and worker details. At the end, summarise all steps in a table format."
+}
